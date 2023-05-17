@@ -3,7 +3,7 @@
 
     <property file="build.properties" />
     
-    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
     
     <path id="libpath">
         <fileset dir="${lib.dir}" includes="**/*.jar" />
@@ -22,7 +22,8 @@
         <echo> ----------PACKAGE REMOVAL - START---------------</echo>
 
         <delete dir="${build.dir}" />
-        <delete dir="${build.web.dir}" />
+        <delete dir="${base.dir}" />
+        <delete dir="${build.test.dir}" />
         <delete dir="${build.api.dir}" />
 
         <echo> ----------PACKAGE REMOVAL - SUCCESS---------------</echo>
@@ -34,9 +35,11 @@
         <echo> ----------PACKAGE CREATION - START---------------</echo>
 
         <mkdir dir="${build.dir}" />
+        <mkdir dir="${base.dir}" />
         <mkdir dir="${build.classes.dir}" />
+        <mkdir dir="${build.lib.dir}" />
         <mkdir dir="${build.web.dir}" />
-        <mkdir dir="${build.web.dir}" />
+        <mkdir dir="${build.api.dir}" />
         <mkdir dir="${build.test.dir}" />
         <mkdir dir="${reports.test}" />
 
@@ -69,6 +72,14 @@
             
         </javac>
 
+        <copy todir="${build.lib.dir}">
+            <fileset dir="${lib.dir}" />
+        </copy>
+
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${sql.dir}" includes="**/*.sql" />
+        </copy>
+
         <echo> ----------COMPILE - SUCCESS---------------</echo>
 
     </target>
@@ -81,17 +92,19 @@
             <fileset dir="${src.web.dir}" />
         </copy>
 
-        <copy todir="${build.web-inf.dir}/lib">
-            <fileset dir="${lib.dir}" />
+        <copy todir="${build.web-inf.dir}">
+            <fileset dir="${build.dir}" excludes="**/api/**" />
         </copy>
 
-        <copy todir="${web.classes}">
-            <fileset dir="${build.classes.dir}" excludes="**/api/**" />
+        <copy todir="${build.api.dir}" >
+            <fileset dir="${build.dir}" excludes="**/app/**" />
         </copy>       
 
-        <copy todir="${web.classes}">
-            <fileset dir="src/main/taparia-storage-jdbc/src/main/resources/" includes="**/*.sql" />
+        <copy todir="${build.api.dir}" >
+            <fileset dir="${web-inf.path}" />
         </copy>
+        
+        <echo> ----------PREPARATION - SUCCESS---------------</echo>
 
     </target>
 
@@ -107,6 +120,14 @@
                 <attribute name="Created-By" value="${user.name}" />
                 <attribute name="Manifest-Version" value="1.0" />
                 <attribute name="Main-Class" value="NoClass" />
+            </manifest>
+        </war>
+
+        <war destfile="${build.api}/api.war" needxmlfile="false">
+            <fileset dir="${build.api}" />
+            <manifest>
+                <attribute name="Created-By" value="${user.name}" />
+                <attribute name="Manifest-Version" value="1.0" />
             </manifest>
         </war>
 
@@ -140,6 +161,10 @@
     <target name="scp" depends="build">
 
         <echo> ----------TRANSFER - START---------------</echo>
+
+        <input message="Enter password:" addproperty="scp.password">
+            <handler type="secure" />
+        </input>
 
         <trycatch>
             <try>
