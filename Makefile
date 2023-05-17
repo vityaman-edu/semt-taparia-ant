@@ -1,7 +1,7 @@
 .ONESHELL: clean war infra
 
 clean:
-	mvn clean
+	ant clean
 
 start-docker:
 	sudo systemctl start docker
@@ -18,7 +18,10 @@ prepare-api:
 wars: prepare-api prepare-app
 	mvn package
 
-infra: clean wars Dockerfile docker-compose.yml
+ant-wars: prepare-api prepare-app
+	ant build
+
+infra: clean ant-wars Dockerfile docker-compose.yml
 	sudo docker compose down
 	sudo docker compose build --no-cache
 	sudo docker compose up --build --force-recreate

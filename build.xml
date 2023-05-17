@@ -22,6 +22,8 @@
         <echo> ----------PACKAGE REMOVAL - START---------------</echo>
 
         <delete dir="${build.dir}" />
+        <delete dir="${build.web.dir}" />
+        <delete dir="${build.api.dir}" />
 
         <echo> ----------PACKAGE REMOVAL - SUCCESS---------------</echo>
 
@@ -33,7 +35,7 @@
 
         <mkdir dir="${build.dir}" />
         <mkdir dir="${build.classes.dir}" />
-        <mkdir dir="${build.lib.dir}" />
+        <mkdir dir="${build.web.dir}" />
         <mkdir dir="${build.web.dir}" />
         <mkdir dir="${build.test.dir}" />
         <mkdir dir="${reports.test}" />
@@ -47,7 +49,7 @@
         <echo> ----------COMPILE - START---------------</echo>
 
         <javac srcdir="${src.main.dir}"
-            destdir="${build.classes.dir}" 
+            destdir="${build.classes.dir}"
             includeantruntime="false"
             includes="**/*.java">
 
@@ -71,41 +73,36 @@
 
     </target>
 
-    <target name="build" depends="compile"> 
+    <target name="prepare-build" depends="compile">
 
-        <echo> ----------BUILD PROCESS - START---------------</echo>
-
-        <!-- For short time, then it would be WEB-INF and so on. Shall we devide web and back? -->
-
-        <copy todir="${build.lib.dir}">
-            <fileset dir="${lib.dir}" />
-        </copy>
+        <echo> ----------PREPARATION - START---------------</echo>
 
         <copy todir="${build.web.dir}">
             <fileset dir="${src.web.dir}" />
         </copy>
 
-        <!--<jar destfile="${build.dir}/${ant.project.name}.jar"
-            basedir="${build.classes.dir}">
-            <manifest>
-                <attribute name="Built-by: " value="${user.name}" />
-                <attribute name="Version" value="1.0.0" />
-                <attribute name="Main-class" value="${main.class}" />
-            </manifest>
-        </jar>
+        <copy todir="${build.web-inf.dir}/lib">
+            <fileset dir="${lib.dir}" />
+        </copy>
 
-        <war destfile="${build.dir}/${ant.project.name}.war"
-            basedir="${build.dir}"
-            webxml="${webxml.file}">
-            <manifest>
-                <attribute name="Built-by: " value="${user.name}" />
-                <attribute name="Version" value="1.0.0" />
-                <attribute name="Main-class" value="" />
-            </manifest>
-        </war>-->
+        <copy todir="${web.classes}">
+            <fileset dir="${build.classes.dir}" excludes="**/api/**" />
+        </copy>       
 
-        <war destfile="${build.dir}/${ant.project.name}.war" webxml="${webxml.file}">
-            <fileset dir="${build.dir}" />
+        <copy todir="${web.classes}">
+            <fileset dir="src/main/taparia-storage-jdbc/src/main/resources/" includes="**/*.sql" />
+        </copy>
+
+    </target>
+
+    <target name="build" depends="prepare-build"> 
+
+        <echo> ----------BUILD PROCESS - START---------------</echo>
+
+        <!-- For short time, then it would be WEB-INF and so on. Shall we devide web and back? -->
+
+        <war destfile="${build.web.dir}/app.war" webxml="${webxml.file}">
+            <fileset dir="${build.web.dir}" />
             <manifest>
                 <attribute name="Created-By" value="${user.name}" />
                 <attribute name="Manifest-Version" value="1.0" />
