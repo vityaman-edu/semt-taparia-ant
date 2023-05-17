@@ -7,7 +7,7 @@ start-docker:
 	sudo systemctl start docker
 
 prepare-app:
-	cd taparia-app/src/main/webapp
+	cd src/main/taparia-app/src/main/webapp
 	npm install
 	npx tsc
 	cd ../../../..
@@ -25,3 +25,6 @@ infra: clean wars Dockerfile docker-compose.yml
 
 infra-stop:
 	docker compose stop
+
+make-ant: prepare-api prepare-app
+	ant
