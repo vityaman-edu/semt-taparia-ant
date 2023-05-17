@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="MISPI3" default="build">
+
+    <property file="build.properties" />
+    
+    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+    
+    <path id="libpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar" />
+    </path>
+
+    <path id="testpath">
+        <pathelement location="${libpath}" />
+        <pathelement location="${junit.lib}" />
+        <pathelement location="${hamcrest.lib}" />
+        <pathelement location="${build.test.dir}" />
+        <pathelement location="${build.classes.dir}" />
+    </path>
+    
+    <target name="clean">
+
+        <echo> ----------PACKAGE REMOVAL - START---------------</echo>
+
+        <delete dir="${build.dir}" />
+        <delete dir="${base.dir}" />
+        <delete dir="${build.test.dir}" />
+        <delete dir="${build.api.dir}" />
+
+        <echo> ----------PACKAGE REMOVAL - SUCCESS---------------</echo>
+
+    </target>
+
+    <target name="init">
+
+        <echo> ----------PACKAGE CREATION - START---------------</echo>
+
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${base.dir}" />
+        <mkdir dir="${build.classes.dir}" />
+        <mkdir dir="${build.lib.dir}" />
+        <mkdir dir="${build.web.dir}" />
+        <mkdir dir="${build.api.dir}" />
+        <mkdir dir="${build.test.dir}" />
+        <mkdir dir="${reports.test}" />
+
+        <echo> ----------PACKAGE CREATION - SUCCESS---------------</echo>
+
+    </target>
+
+    <target name="compile" depends="clean, init">
+
+        <echo> ----------COMPILE - START---------------</echo>
+
+        <javac srcdir="${src.main.dir}"
+            destdir="${build.classes.dir}"
+            includeantruntime="false"
+            includes="**/*.java">
+
+            <classpath>
+                <path refid="libpath"/>
+            </classpath>
+
+        </javac>
+
+        <javac srcdir="${test.dir}"
+            destdir="${build.test.dir}"
+            includeantruntime="false">
+
+            <classpath>
+                <path refid="testpath" />
+            </classpath>
+            
+        </javac>
+
+        <copy todir="${build.lib.dir}">
+            <fileset dir="${lib.dir}" />
+        </copy>
+
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${sql.dir}" includes="**/*.sql" />
+        </copy>
+
+        <echo> ----------COMPILE - SUCCESS---------------</echo>
+
+    </target>
+
+    <target name="prepare-build" depends="compile">
+
+        <echo> ----------PREPARATION - START---------------</echo>
+
+        <copy todir="${build.web.dir}">
+            <fileset dir="${src.web.dir}" />
+        </copy>
+
+        <copy todir="${build.web-inf.dir}">
+            <fileset dir="${build.dir}" excludes="**/api/**" />
+        </copy>
+
+        <copy todir="${build.api.dir}" >
+            <fileset dir="${build.dir}" excludes="**/app/**" />
+        </copy>       
+
+        <copy todir="${build.api.dir}" >
+            <fileset dir="${web-inf.path}" />
+        </copy>
+        
+        <echo> ----------PREPARATION - SUCCESS---------------</echo>
+
+    </target>
+
+    <target name="build" depends="prepare-build"> 
+
+        <echo> ----------BUILD PROCESS - START---------------</echo>
+
+        <!-- For short time, then it would be WEB-INF and so on. Shall we devide web and back? -->
+
+        <war destfile="${build.web.dir}/app.war" webxml="${webxml.file}">
+            <fileset dir="${build.web.dir}" />
+            <manifest>
+                <attribute name="Created-By" value="${user.name}" />
+                <attribute name="Manifest-Version" value="1.0" />
+                <attribute name="Main-Class" value="NoClass" />
+            </manifest>
+        </war>
+
+        <war destfile="${build.api}/api.war" needxmlfile="false">
+            <fileset dir="${build.api}" />
+            <manifest>
+                <attribute name="Created-By" value="${user.name}" />
+                <attribute name="Manifest-Version" value="1.0" />
+            </manifest>
+        </war>
+
+        <echo> ----------BUILD PROCESS - SUCCESS---------------</echo>
+
+    </target>
+
+    <target name="test" depends="build">
+
+        <echo> ----------TEST - START---------------</echo>
+
+        <junit printsummary="yes" fork="yes" haltonfailure="yes" haltonerror="yes">
+
+            <classpath>
+                <path refid="testpath" />
+            </classpath>
+
+            <batchtest fork="yes" todir="${reports.test}">
+                <formatter type="xml" />
+                <fileset dir="${test.dir}">
+                    <include name="**/*Test*.java" />
+                </fileset>
+            </batchtest>
+
+        </junit>
+
+        <echo> ----------TEST - SUCCESS---------------</echo>
+
+    </target>
+<!-- not working -->
+    <target name="scp" depends="build">
+
+        <echo> ----------TRANSFER - START---------------</echo>
+
+        <input message="Enter password:" addproperty="scp.password">
+            <handler type="secure" />
+        </input>
+
+        <trycatch>
+            <try>
+            
+                <scp file="${build.dir}/{ant.project.name}.war"
+                    todir="${scp.user}@${scp.host}:${scp.dir}"
+                    password="${scp.password}"
+                    port="${scp.port}"/>
+
+                <echo> ----------TRANSFER - SUCCESS---------------</echo>
+
+            </try>
+
+            <catch>
+
+                <echo>--------------FAILED TO TRANSFER WAR FILE------------------</echo>
+
+            </catch>
+        </trycatch>
+
+    </target>
+
+</project>
