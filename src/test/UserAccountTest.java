@@ -1,9 +1,9 @@
-import org.junit.Test;
 import ru.vityaman.itmo.web.lab.taparia.user.UserAccount;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Test;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
