@@ -208,15 +208,18 @@
             <catch>
                 
                 <exec executable="git" outputproperty="git-head">
-                    <arg value=" log HEAD -1" />
+                    <arg value="rev-parse" />
+                    <arg value="HEAD" />
                 </exec>
                 
                 <echo>${git-head}</echo>
 
-                <exec executable="cmd" outputproperty="git-tail">
-                    <arg value="/c" />
-                    <arg value="git log --pretty=format:%h | tail -1" />
+                <exec executable="git" outputproperty="git-tail">
+                    <arg value="rev-list" />
+                    <arg value="--max-parents=0" />
+                    <arg value="HEAD" />
                 </exec>
+                
                 
                 <if>
                     <equals arg1="${git-head}" arg2="${git-tail}" />
@@ -227,17 +230,19 @@
                     </then>
                     <else>
 
-                        <exec executable="cmd" output="git_diff">
-                            <arg value="/c" />
-                            <arg value="git diff HEAD~1" />
+
+                        <exec executable="git" output="git_diff">
+                            <arg value="diff" />
+                            <arg value="HEAD~1" />
                         </exec>
 
-                        <exec executable="cmd">
-                            <arg value="/c" />
-                            <arg value="git reset HEAD~1 --hard" />
+                        <exec executable="git">
+                            <arg value="reset" />
+                            <arg value="HEAD~1" />
+                            <arg value="--hard" />
                         </exec>
 
-                        <antcall target="history" />
+                        <runtarget target="history" />
        
                     </else>
                 </if>
