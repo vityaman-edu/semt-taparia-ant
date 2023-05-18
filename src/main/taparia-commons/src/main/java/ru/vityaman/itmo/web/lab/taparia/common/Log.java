@@ -7,5 +7,4 @@ public interface Log {
     void warn(String message, Throwable e);
     void error(String pattern, Object... vars);
     void error(String message, Throwable e); 
-    vaid();
 }
