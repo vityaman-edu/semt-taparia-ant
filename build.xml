@@ -193,7 +193,7 @@
 
     </target>
 
-    <target ="history">
+    <target name="history">
 
         <echo>--------------LET THE HISTORY BEGIN------------------</echo>
 
@@ -204,7 +204,7 @@
 
                 <echo>--------------HISTORY SUCCESSFULLY ENDS HERE------------------</echo>
 
-            <try>
+            </try>
             <catch>
                 
                 <exec executable="cmd" outputproperty="git-head">
@@ -242,7 +242,7 @@
                 </if>
 
             </catch>
-        </trycarch>
+        </trycatch>
 
     </target>
 
