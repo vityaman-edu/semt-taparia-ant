@@ -1,6 +1,5 @@
 package ru.vityaman.itmo.web.lab.taparia.api.error;
 
-
 import jakarta.ws.rs.core.Response;
 
 public class ApiError extends Exception {

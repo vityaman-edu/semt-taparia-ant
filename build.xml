@@ -27,15 +27,15 @@
 
     <target name="clean">
         <echo> ----------PACKAGE REMOVAL - START---------------</echo>
-        <delete dir="${out.dir}"/>
+        <delete dir="${out.dir}" />
         <echo> ----------PACKAGE REMOVAL - SUCCESS---------------</echo>
     </target>
 
     <target name="init">
         <echo> ----------PACKAGE CREATION - START---------------</echo>
-        <mkdir dir="${out.dir}"/>
+        <mkdir dir="${out.dir}" />
         <mkdir dir="${build.dir}" />
-        <mkdir dir="${base.dir}" />
+        <mkdir dir="${dist.dir}" />
         <mkdir dir="${build.classes.dir}" />
         <mkdir dir="${build.lib.dir}" />
         <mkdir dir="${build.web.dir}" />
@@ -90,7 +90,7 @@
 
     <target name="build" depends="prepare-build">
         <echo> ----------BUILD PROCESS - START---------------</echo>
-        <war destfile="${base.dir}/app.war" webxml="${webxml.file}">
+        <war destfile="${dist.dir}/app.war" webxml="${webxml.file}">
             <fileset dir="${build.web.dir}" />
             <manifest>
                 <attribute name="Created-By" value="${user.name}" />
@@ -98,7 +98,7 @@
                 <attribute name="Main-Class" value="NoClass" />
             </manifest>
         </war>
-        <war destfile="${base.dir}/api.war" needxmlfile="false">
+        <war destfile="${dist.dir}/api.war" needxmlfile="false">
             <fileset dir="${build.api}" />
             <manifest>
                 <attribute name="Created-By" value="${user.name}" />
@@ -110,10 +110,16 @@
 
     <target name="test" depends="build">
         <echo> ----------TEST - START---------------</echo>
-        <junit printsummary="yes" fork="yes" haltonfailure="yes" haltonerror="yes">
+        <junit
+            printsummary="yes"
+            fork="yes"
+            haltonfailure="yes"
+            haltonerror="yes">
             <classpath>
                 <path refid="testpath" />
             </classpath>
+            <classpath location="lib/junit-4.11.jar" />
+            <classpath location="lib/hamcrest-core-1.3.jar" />
             <batchtest fork="yes" todir="${reports.test}">
                 <formatter type="xml" />
                 <fileset dir="${test.dir}">
@@ -135,7 +141,7 @@
                     password="${scp.password}"
                     port="${scp.port}"
                     trust="true">
-                    <fileset dir="${base.dir}" includes="*.war" />
+                    <fileset dir="${dist.dir}" includes="*.war" />
                 </scp>
                 <echo> ----------TRANSFER - SUCCESS---------------</echo>
             </try>
@@ -182,4 +188,6 @@
             </catch>
         </trycatch>
     </target>
+
+    
 </project>
