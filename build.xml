@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="MISPI3" default="build">
+<project name="taparia-ant" default="build">
+    <description>
+        The good old web lab Taparia...
+        but now powered by Ant build system!
+    </description>
 
     <property file="build.properties" />
-    
+
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
-            <pathelement location="${ant-cont.dir}"/>
+            <pathelement location="${ant-cont.dir}" />
         </classpath>
     </taskdef>
 
@@ -20,24 +24,16 @@
         <pathelement location="${build.test.dir}" />
         <pathelement location="${build.classes.dir}" />
     </path>
-    
+
     <target name="clean">
-
         <echo> ----------PACKAGE REMOVAL - START---------------</echo>
-
-        <delete dir="${build.dir}" />
-        <delete dir="${base.dir}" />
-        <delete dir="${build.test.dir}" />
-        <delete dir="${build.api.dir}" />
-
+        <delete dir="${out.dir}"/>
         <echo> ----------PACKAGE REMOVAL - SUCCESS---------------</echo>
-
     </target>
 
     <target name="init">
-
         <echo> ----------PACKAGE CREATION - START---------------</echo>
-
+        <mkdir dir="${out.dir}"/>
         <mkdir dir="${build.dir}" />
         <mkdir dir="${base.dir}" />
         <mkdir dir="${build.classes.dir}" />
@@ -46,76 +42,54 @@
         <mkdir dir="${build.api.dir}" />
         <mkdir dir="${build.test.dir}" />
         <mkdir dir="${reports.test}" />
-
         <echo> ----------PACKAGE CREATION - SUCCESS---------------</echo>
-
     </target>
 
     <target name="compile" depends="clean, init">
-
         <echo> ----------COMPILE - START---------------</echo>
-
         <javac srcdir="${src.main.dir}"
             destdir="${build.classes.dir}"
             includeantruntime="false"
             includes="**/*.java">
-
             <classpath>
-                <path refid="libpath"/>
+                <path refid="libpath" />
             </classpath>
-
         </javac>
-
         <javac srcdir="${test.dir}"
             destdir="${build.test.dir}"
             includeantruntime="false">
-
             <classpath>
                 <path refid="testpath" />
             </classpath>
-            
         </javac>
-
         <copy todir="${build.lib.dir}">
             <fileset dir="${lib.dir}" />
         </copy>
-
         <copy todir="${build.classes.dir}">
             <fileset dir="${sql.dir}" includes="**/*.sql" />
         </copy>
-
         <echo> ----------COMPILE - SUCCESS---------------</echo>
-
     </target>
 
     <target name="prepare-build" depends="compile">
-
         <echo> ----------PREPARATION - START---------------</echo>
-
         <copy todir="${build.web.dir}">
             <fileset dir="${src.web.dir}" />
         </copy>
-
         <copy todir="${build.web-inf.dir}">
             <fileset dir="${build.dir}" excludes="**/api/**" />
         </copy>
-
-        <copy todir="${build.api.dir}" >
+        <copy todir="${build.api.dir}">
             <fileset dir="${build.dir}" excludes="**/app/**" />
-        </copy>       
-
-        <copy todir="${build.api.dir}" >
+        </copy>
+        <copy todir="${build.api.dir}">
             <fileset dir="${web-inf.path}" />
         </copy>
-
         <echo> ----------PREPARATION - SUCCESS---------------</echo>
-
     </target>
 
-    <target name="build" depends="prepare-build"> 
-
+    <target name="build" depends="prepare-build">
         <echo> ----------BUILD PROCESS - START---------------</echo>
-
         <war destfile="${base.dir}/app.war" webxml="${webxml.file}">
             <fileset dir="${build.web.dir}" />
             <manifest>
@@ -124,7 +98,6 @@
                 <attribute name="Main-Class" value="NoClass" />
             </manifest>
         </war>
-
         <war destfile="${base.dir}/api.war" needxmlfile="false">
             <fileset dir="${build.api}" />
             <manifest>
@@ -132,119 +105,81 @@
                 <attribute name="Manifest-Version" value="1.0" />
             </manifest>
         </war>
-
         <echo> ----------BUILD PROCESS - SUCCESS---------------</echo>
-
     </target>
 
     <target name="test" depends="build">
-
         <echo> ----------TEST - START---------------</echo>
-
         <junit printsummary="yes" fork="yes" haltonfailure="yes" haltonerror="yes">
-
             <classpath>
                 <path refid="testpath" />
             </classpath>
-
             <batchtest fork="yes" todir="${reports.test}">
                 <formatter type="xml" />
                 <fileset dir="${test.dir}">
                     <include name="**/*Test*.java" />
                 </fileset>
             </batchtest>
-
         </junit>
-
         <echo> ----------TEST - SUCCESS---------------</echo>
-
     </target>
-<!-- not working -->
+
     <target name="scp" depends="build">
-
         <echo> ----------TRANSFER - START---------------</echo>
-
         <input message="Enter password:" addproperty="scp.password">
             <handler type="secure" />
         </input>
-
         <trycatch>
             <try>
-
                 <scp todir="${scp.user}@${scp.host}:${scp.dir}"
                     password="${scp.password}"
                     port="${scp.port}"
                     trust="true">
-
                     <fileset dir="${base.dir}" includes="*.war" />
-
                 </scp>
-                
-
                 <echo> ----------TRANSFER - SUCCESS---------------</echo>
-
             </try>
             <catch>
-
                 <echo>--------------FAILED TO TRANSFER WAR FILE------------------</echo>
-
             </catch>
         </trycatch>
-
     </target>
 
     <target name="history">
-
         <echo>--------------LET THE HISTORY BEGIN------------------</echo>
-
         <trycatch>
             <try>
-                
                 <antcall target="compile" />
-
                 <echo>--------------HISTORY SUCCESSFULLY ENDS HERE------------------</echo>
-
             </try>
             <catch>
-                
                 <exec executable="git" outputproperty="git-head">
                     <arg value=" log HEAD -1" />
                 </exec>
-                
                 <echo>${git-head}</echo>
-
                 <exec executable="cmd" outputproperty="git-tail">
                     <arg value="/c" />
                     <arg value="git log --pretty=format:%h | tail -1" />
                 </exec>
-                
                 <if>
                     <equals arg1="${git-head}" arg2="${git-tail}" />
                     <then>
-
-                        <echo>--------------HISTORY FOUND THAT NO WORKING COPIES HAVE BEEN COMMITED------------------</echo>
-
+                        <echo>--------------HISTORY FOUND THAT NO WORKING COPIES HAVE BEEN
+                            COMMITED------------------</echo>
                     </then>
                     <else>
-
                         <exec executable="cmd" output="git_diff">
                             <arg value="/c" />
                             <arg value="git diff HEAD~1" />
                         </exec>
-
                         <exec executable="cmd">
                             <arg value="/c" />
                             <arg value="git reset HEAD~1 --hard" />
                         </exec>
-
                         <antcall target="history" />
-       
                     </else>
                 </if>
-
             </catch>
         </trycatch>
-
     </target>
-
 </project>
