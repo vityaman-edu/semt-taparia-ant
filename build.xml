@@ -207,10 +207,11 @@
             </try>
             <catch>
                 
-                <exec executable="cmd" outputproperty="git-head">
-                    <arg value="/c" />
-                    <arg value="git log --pretty=format:%h | head -1" />
+                <exec executable="git" outputproperty="git-head">
+                    <arg value=" log HEAD -1" />
                 </exec>
+                
+                <echo>${git-head}</echo>
 
                 <exec executable="cmd" outputproperty="git-tail">
                     <arg value="/c" />
