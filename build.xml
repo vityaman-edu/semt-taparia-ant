@@ -3,8 +3,12 @@
 
     <property file="build.properties" />
     
-    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
-    
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${ant-cont.dir}"/>
+        </classpath>
+    </taskdef>
+
     <path id="libpath">
         <fileset dir="${lib.dir}" includes="**/*.jar" />
     </path>
@@ -103,7 +107,7 @@
         <copy todir="${build.api.dir}" >
             <fileset dir="${web-inf.path}" />
         </copy>
-        
+
         <echo> ----------PREPARATION - SUCCESS---------------</echo>
 
     </target>
@@ -112,9 +116,7 @@
 
         <echo> ----------BUILD PROCESS - START---------------</echo>
 
-        <!-- For short time, then it would be WEB-INF and so on. Shall we devide web and back? -->
-
-        <war destfile="${build.web.dir}/app.war" webxml="${webxml.file}">
+        <war destfile="${base.dir}/app.war" webxml="${webxml.file}">
             <fileset dir="${build.web.dir}" />
             <manifest>
                 <attribute name="Created-By" value="${user.name}" />
@@ -123,7 +125,7 @@
             </manifest>
         </war>
 
-        <war destfile="${build.api}/api.war" needxmlfile="false">
+        <war destfile="${base.dir}/api.war" needxmlfile="false">
             <fileset dir="${build.api}" />
             <manifest>
                 <attribute name="Created-By" value="${user.name}" />
@@ -168,19 +170,77 @@
 
         <trycatch>
             <try>
-            
-                <scp file="${build.dir}/{ant.project.name}.war"
-                    todir="${scp.user}@${scp.host}:${scp.dir}"
+
+                <scp todir="${scp.user}@${scp.host}:${scp.dir}"
                     password="${scp.password}"
-                    port="${scp.port}"/>
+                    port="${scp.port}"
+                    trust="true">
+
+                    <fileset dir="${base.dir}" includes="*.war" />
+
+                </scp>
+                
 
                 <echo> ----------TRANSFER - SUCCESS---------------</echo>
 
             </try>
-
             <catch>
 
                 <echo>--------------FAILED TO TRANSFER WAR FILE------------------</echo>
+
+            </catch>
+        </trycatch>
+
+    </target>
+
+    <target name="history">
+
+        <echo>--------------LET THE HISTORY BEGIN------------------</echo>
+
+        <trycatch>
+            <try>
+                
+                <antcall target="compile" />
+
+                <echo>--------------HISTORY SUCCESSFULLY ENDS HERE------------------</echo>
+
+            </try>
+            <catch>
+                
+                <exec executable="git" outputproperty="git-head">
+                    <arg value=" log HEAD -1" />
+                </exec>
+                
+                <echo>${git-head}</echo>
+
+                <exec executable="cmd" outputproperty="git-tail">
+                    <arg value="/c" />
+                    <arg value="git log --pretty=format:%h | tail -1" />
+                </exec>
+                
+                <if>
+                    <equals arg1="${git-head}" arg2="${git-tail}" />
+                    <then>
+
+                        <echo>--------------HISTORY FOUND THAT NO WORKING COPIES HAVE BEEN COMMITED------------------</echo>
+
+                    </then>
+                    <else>
+
+                        <exec executable="cmd" output="git_diff">
+                            <arg value="/c" />
+                            <arg value="git diff HEAD~1" />
+                        </exec>
+
+                        <exec executable="cmd">
+                            <arg value="/c" />
+                            <arg value="git reset HEAD~1 --hard" />
+                        </exec>
+
+                        <antcall target="history" />
+       
+                    </else>
+                </if>
 
             </catch>
         </trycatch>
