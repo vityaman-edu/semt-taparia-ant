@@ -220,6 +220,7 @@
                     <arg value="HEAD" />
                 </exec>
                 
+                
                 <if>
                     <equals arg1="${git-head}" arg2="${git-tail}" />
                     <then>
@@ -232,7 +233,7 @@
 
                         <exec executable="git" output="git_diff">
                             <arg value="diff" />
-                            <arg value="HEAD~1" />
+                            <arg value="HEAD" />
                         </exec>
 
                         <exec executable="git">
@@ -241,7 +242,7 @@
                             <arg value="--hard" />
                         </exec>
 
-                        <antcall target="history" />
+                        <runtarget target="history" />
        
                     </else>
                 </if>
