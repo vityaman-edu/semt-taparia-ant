@@ -1,0 +1,154 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{wrapfig}
+\usepackage{multirow}
+\usepackage{mathtools}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{setspace}
+\usepackage{changepage}
+\usepackage{caption}
+\usepackage{csquotes}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\pgfplotsset{compat=1.18}
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = blue,
+  filecolor  = magenta,      
+  urlcolor   = darkgray,
+  pdftitle   = semt-report-vcs-smirnov-shinakov,
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.99,0.99,0.99}
+
+\lstdefinestyle{codestyle}{
+  backgroundcolor=\color{backcolour},   
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2
+}
+
+\lstset{style=codestyle}
+\begin{document}
+
+\begin{titlepage}
+  \begin{center}
+    \begin{spacing}{1.4}
+      \large{Университет ИТМО} \\
+      \large{Факультет программной инженерии и компьютерной техники} \\
+    \end{spacing}
+    \vfill
+    \textbf{
+      \huge{Методы и средства программной инженерии.} \\
+      \huge{Лабораторная работа №3.} \\
+      \huge{Системы сборки} \\
+    }
+  \end{center}
+  \vfill
+  \begin{center}
+    \begin{tabular}{r l}
+      Смирнов Виктор Игоревич  & P32131 \\
+      Шиняков Артём Дмитриевич & R32372 \\
+      Вариант                  & 1009   \\
+    \end{tabular}
+  \end{center}
+  \vfill
+  \begin{center}
+    \begin{large}
+      2023
+    \end{large}
+  \end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\section{Задание}
+
+Написать сценарий для утилиты Apache Ant, 
+реализующий компиляцию, тестирование и 
+упаковку в jar-архив кода проекта из лабораторной 
+работы №3 по дисциплине "Веб-программирование".
+
+Каждый этап должен быть выделен в отдельный блок сценария; 
+все переменные и константы, используемые в сценарии, 
+должны быть вынесены в отдельный файл параметров; 
+MANIFEST.MF должен содержать информацию о версии и о 
+запускаемом классе.
+
+Cценарий должен реализовывать следующие цели (targets):
+\begin{enumerate}
+    \item compile -- компиляция исходных кодов проекта.
+    \item build -- компиляция исходных кодов проекта и их 
+          упаковка в исполняемый jar-архив. Компиляцию исходных 
+          кодов реализовать посредством вызова цели compile.
+    \item clean -- удаление скомпилированных классов проекта 
+          и всех временных файлов (если они есть).
+    \item test -- запуск junit-тестов проекта. Перед запуском 
+          тестов необходимо осуществить сборку проекта 
+          (цель build).
+    \item scp - перемещение собранного проекта по scp на 
+          выбранный сервер по завершению сборки. 
+          Предварительно необходимо выполнить сборку проекта 
+          (цель build)
+    \item history - если проект не удаётся скомпилировать 
+          (цель compile), загружается предыдущая версия из 
+          репозитория git. Операция повторяется до тех пор, 
+          пока проект не удастся собрать, либо не будет 
+          получена самая первая ревизия из репозитория. 
+          Если такая ревизия найдена, то формируется файл, 
+          содержащий результат операции diff для всех файлов, 
+          измёненных в ревизии, следующей непосредственно за 
+          последней работающей.
+\end{enumerate}
+
+\section{build.properties}
+
+\lstinputlisting[
+    caption={build.properties}
+]{../build.properties}
+
+\section{build.xml}
+
+\lstinputlisting[
+    language=Xml,
+    caption={build.xml}
+]{../build.xml}
+
+\section{UserAccountTest.java}
+
+\lstinputlisting[
+    language=Java,
+    caption={UserAccountTest.java}
+]{../src/test/UserAccountTest.java}
+
+\section{Вывод}
+
+Выполнив данную лабораторную работу мы научились 
+познакомились с основными принципами работы 
+систем автоматической сборки проектов на примере
+Ant, а также поняли, как использовать фреймворк
+JUnit для юнит-тестирования нашего программного продукта.
+
+\end{document}
